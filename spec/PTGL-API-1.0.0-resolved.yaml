@@ -1,0 +1,758 @@
+---
+openapi: 3.0.0
+info:
+  title: PTGL API
+  description: The API of the Protein Topology Graph Library
+  contact:
+    email: ts+code@rcmd.org
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/TimSchafer/PTGL-API/1.0.0
+  description: SwaggerHub API Auto Mocking
+- url: http://ptgl.uni-frankfurt.de/api/index.php
+  description: SwaggerHub API Auto Mocking
+tags:
+- name: public
+  description: Public.
+- name: admins
+  description: Secured Admin-only calls.
+- name: developers
+  description: Operations available to regular developers.
+paths:
+  /chains/{pdbid}:
+    get:
+      tags:
+      - public
+      summary: List all chain names for a protein
+      description: |
+        List all chain names for a protein, given by its PDB identifier. The chains names can be used to query more specific information in subsequent API calls.
+      operationId: listChains
+      parameters:
+      - name: pdbid
+        in: path
+        description: The protein identifier from the Protein Data Bank (the RCSB PDB).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: 7TIM
+      responses:
+        "200":
+          description: List of all chain names of the respective protein.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: bad input parameter
+  /folds/{pdbid}/{chain}/{graphtype}:
+    get:
+      tags:
+      - public
+      summary: "List all fold identifiers (indices of folding graphs, or connected components) of a protein graph."
+      description: |
+        Search for all fold identifiers of a protein graph. The graph is defined by the protein (PDB ID), chain, and the graph type. A fold, also known as a folding graph, or more generally, a connected component of a graph, is a part of a full protein graph. Fold identifiers are simple, zero-based indices that can be used to query more specific information in subsequent API calls.
+      operationId: listFolds
+      parameters:
+      - name: pdbid
+        in: path
+        description: The protein identifier from the Protein Data Bank (the RCSB PDB).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: 7TIM
+      - name: chain
+        in: path
+        description: "The protein chain identifier from the Protein Data Bank (the RCSB PDB). If you do not know the chains of a protein, use the /chains API operation to retrieve them first."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: A
+      - name: graphtype
+        in: path
+        description: "The graph type, defining the secondary structure elememts (SSEs) you are interested in. If you specify alpha, the graph will contain only nodes (SSEs) which are alpha helices. For beta, it will contain only beta chains. For albe (short for alpha + beta), it will contain both alpha helices and beta chains. For alphalig (short for alpha + ligands), it will contain only alpha helices and ligands. And so on."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - alpha
+          - beta
+          - albe
+          - alphalig
+          - betalig
+          - albelig
+        example: albe
+      responses:
+        "200":
+          description: "List of all folding graph numbers of the respective protein graph. The numbers are zero based indices into the list of connectec components of the graph. If a graph consists of a single connected component, this will return a list containing only the number zero."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  minimum: 0
+                  type: integer
+                  format: int32
+        "400":
+          description: bad input parameter
+  /pg/{pdbid}/{chain}/{graphtype}/{graphformat}:
+    get:
+      tags:
+      - public
+      summary: Retrieve graph string for a protein graph in the respective graph file format.
+      description: |
+        Search for graph string of a protein graph in a certain graph file format. The graph is defined by the protein identifier (PDB ID), chain, and the graph type.
+      operationId: retrieveProteinGraphString
+      parameters:
+      - name: pdbid
+        in: path
+        description: The protein identifier from the Protein Data Bank (the RCSB PDB).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: 7TIM
+      - name: chain
+        in: path
+        description: "The protein chain identifier from the Protein Data Bank (the RCSB PDB). If you do not know the chains of a protein, use the /chains API operation to retrieve them first."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: A
+      - name: graphtype
+        in: path
+        description: "The graph type, defining the secondary structure elememts (SSEs) you are interested in. If you specify alpha, the graph will contain only nodes (SSEs) which are alpha helices. For beta, it will contain only beta chains. For albe (short for alpha + beta), it will contain both alpha helices and beta chains. For alphalig (short for alpha + ligands), it will contain only alpha helices and ligands. And so on."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - alpha
+          - beta
+          - albe
+          - alphalig
+          - betalig
+          - albelig
+        example: albe
+      - name: graphformat
+        in: path
+        description: The graph file format.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - gml
+          - json
+          - xml
+        example: gml
+      responses:
+        "200":
+          description: "The graph string, a serialized graph description."
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: bad input parameter
+  /pgvis/{pdbid}/{chain}/{graphtype}/{imageformat}:
+    get:
+      tags:
+      - public
+      summary: Retrieve graph visualization for a protein graph in the respective image file format.
+      description: |
+        Search for visualization of a protein graph in a certain image format. The graph is defined by the protein identifier (PDB ID), chain, and the graph type.
+      operationId: retrieveProteinGraphVis
+      parameters:
+      - name: pdbid
+        in: path
+        description: The protein identifier from the Protein Data Bank (the RCSB PDB).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: 7TIM
+      - name: chain
+        in: path
+        description: "The protein chain identifier from the Protein Data Bank (the RCSB PDB). If you do not know the chains of a protein, use the /chains API operation to retrieve them first."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: A
+      - name: graphtype
+        in: path
+        description: "The graph type, defining the secondary structure elememts (SSEs) you are interested in. If you specify alpha, the graph will contain only nodes (SSEs) which are alpha helices. For beta, it will contain only beta chains. For albe (short for alpha + beta), it will contain both alpha helices and beta chains. For alphalig (short for alpha + ligands), it will contain only alpha helices and ligands. And so on."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - alpha
+          - beta
+          - albe
+          - alphalig
+          - betalig
+          - albelig
+        example: albe
+      - name: imageformat
+        in: path
+        description: The image file format.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - png
+          - svg
+        example: png
+      responses:
+        "200":
+          description: "The protein graph string, a serialized graph description."
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: bad input parameter
+  /fg/{pdbid}/{chain}/{graphtype}/{fold}/{graphformat}:
+    get:
+      tags:
+      - public
+      summary: Retrieve graph string for a folding graph in the respective graph file format.
+      description: |
+        Search for graph string of a protein graph in a certain graph file format. The graph is defined by the protein identifier (PDB ID), chain, and the graph type.
+      operationId: retrieveFoldingGraphString
+      parameters:
+      - name: pdbid
+        in: path
+        description: The protein identifier from the Protein Data Bank (the RCSB PDB).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: 7TIM
+      - name: chain
+        in: path
+        description: "The protein chain identifier from the Protein Data Bank (the RCSB PDB). If you do not know the chains of a protein, use the /chains API operation to retrieve them first."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: A
+      - name: graphtype
+        in: path
+        description: "The graph type, defining the secondary structure elememts (SSEs) you are interested in. If you specify alpha, the graph will contain only nodes (SSEs) which are alpha helices. For beta, it will contain only beta chains. For albe (short for alpha + beta), it will contain both alpha helices and beta chains. For alphalig (short for alpha + ligands), it will contain only alpha helices and ligands. And so on."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - alpha
+          - beta
+          - albe
+          - alphalig
+          - betalig
+          - albelig
+        example: albe
+      - name: fold
+        in: path
+        description: The fold number (folding graph or connected component index).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+        example: 0
+      - name: graphformat
+        in: path
+        description: The graph file format.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - gml
+          - json
+          - xml
+        example: gml
+      responses:
+        "200":
+          description: "The folding graph string, a serialized graph description."
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: bad input parameter
+  /fgvis/{pdbid}/{chain}/{graphtype}/{fold}/{imageformat}:
+    get:
+      tags:
+      - public
+      summary: Retrieve graph visualization for a folding graph in the respective image file format.
+      description: |
+        Search for graph string of a protein graph in a certain graph file format. The graph is defined by the protein identifier (PDB ID), chain, and the graph type.
+      operationId: retrieveFoldingGraphVis
+      parameters:
+      - name: pdbid
+        in: path
+        description: The protein identifier from the Protein Data Bank (the RCSB PDB).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: 7TIM
+      - name: chain
+        in: path
+        description: "The protein chain identifier from the Protein Data Bank (the RCSB PDB). If you do not know the chains of a protein, use the /chains API operation to retrieve them first."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: A
+      - name: graphtype
+        in: path
+        description: "The graph type, defining the secondary structure elememts (SSEs) you are interested in. If you specify alpha, the graph will contain only nodes (SSEs) which are alpha helices. For beta, it will contain only beta chains. For albe (short for alpha + beta), it will contain both alpha helices and beta chains. For alphalig (short for alpha + ligands), it will contain only alpha helices and ligands. And so on."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - alpha
+          - beta
+          - albe
+          - alphalig
+          - betalig
+          - albelig
+        example: albe
+      - name: fold
+        in: path
+        description: The fold number (folding graph or connected component index).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+        example: 0
+      - name: imageformat
+        in: path
+        description: The image file format.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - png
+          - svg
+        example: png
+      responses:
+        "200":
+          description: The folding graph visualization (image).
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: bad input parameter
+  /linnot/{pdbid}/{chain}/{graphtype}/{fold}/{linnot}:
+    get:
+      tags:
+      - public
+      summary: Retrieve linear notation (linnot) string for a folding graph in the respective linnot format.
+      description: |
+        Search for a linear notation string for a folding graph.
+      operationId: retrieveFoldingGraphLinnot
+      parameters:
+      - name: pdbid
+        in: path
+        description: The protein identifier from the Protein Data Bank (the RCSB PDB).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: 7TIM
+      - name: chain
+        in: path
+        description: "The protein chain identifier from the Protein Data Bank (the RCSB PDB). If you do not know the chains of a protein, use the /chains API operation to retrieve them first."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: A
+      - name: graphtype
+        in: path
+        description: "The graph type, defining the secondary structure elememts (SSEs) you are interested in. If you specify alpha, the graph will contain only nodes (SSEs) which are alpha helices. For beta, it will contain only beta chains. For albe (short for alpha + beta), it will contain both alpha helices and beta chains. For alphalig (short for alpha + ligands), it will contain only alpha helices and ligands. And so on."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - alpha
+          - beta
+          - albe
+          - alphalig
+          - betalig
+          - albelig
+        example: albe
+      - name: fold
+        in: path
+        description: The fold number (folding graph or connected component index).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+        example: 0
+      - name: linnot
+        in: path
+        description: Linear notation type. There are four linear notation types. Linnots are used to describe folding graphs (connected components of protein graphs).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - adj
+          - red
+          - seq
+          - key
+      responses:
+        "200":
+          description: The linear notation string for a folding graph.
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: bad input parameter
+  /linnotvis/{pdbid}/{chain}/{graphtype}/{fold}/{linnot}/{imageformat}:
+    get:
+      tags:
+      - public
+      summary: Retrieve linear notation visualization for a folding graph in the respective image format.
+      description: |
+        Search for a linear notation image for a folding graph.
+      operationId: retrieveLinnotVis
+      parameters:
+      - name: pdbid
+        in: path
+        description: The protein identifier from the Protein Data Bank (the RCSB PDB).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: 7TIM
+      - name: chain
+        in: path
+        description: "The protein chain identifier from the Protein Data Bank (the RCSB PDB). If you do not know the chains of a protein, use the /chains API operation to retrieve them first."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: A
+      - name: graphtype
+        in: path
+        description: "The graph type, defining the secondary structure elememts (SSEs) you are interested in. If you specify alpha, the graph will contain only nodes (SSEs) which are alpha helices. For beta, it will contain only beta chains. For albe (short for alpha + beta), it will contain both alpha helices and beta chains. For alphalig (short for alpha + ligands), it will contain only alpha helices and ligands. And so on."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - alpha
+          - beta
+          - albe
+          - alphalig
+          - betalig
+          - albelig
+        example: albe
+      - name: fold
+        in: path
+        description: The fold number (folding graph or connected component index).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+        example: 0
+      - name: linnot
+        in: path
+        description: Linear notation type. There are four linear notation types. Linnots are used to describe folding graphs (connected components of protein graphs).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - adj
+          - red
+          - seq
+          - key
+      - name: imageformat
+        in: path
+        description: The image file format.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - png
+          - svg
+        example: png
+      responses:
+        "200":
+          description: The linear notation visualization for a folding graph.
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: bad input parameter
+  /linnots/<pdbid>/<chain>/<graphtype>/<fold>/json:
+    get:
+      tags:
+      - public
+      summary: Retrieve all four linear notation (linnot) strings for a folding graph.
+      description: |
+        Search for all linear notation strings for a folding graph.
+      operationId: retrieveAllFoldingGraphLinnots
+      parameters:
+      - name: pdbid
+        in: path
+        description: The protein identifier from the Protein Data Bank (the RCSB PDB).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: 7TIM
+      - name: chain
+        in: path
+        description: "The protein chain identifier from the Protein Data Bank (the RCSB PDB). If you do not know the chains of a protein, use the /chains API operation to retrieve them first."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: A
+      - name: graphtype
+        in: path
+        description: "The graph type, defining the secondary structure elememts (SSEs) you are interested in. If you specify alpha, the graph will contain only nodes (SSEs) which are alpha helices. For beta, it will contain only beta chains. For albe (short for alpha + beta), it will contain both alpha helices and beta chains. For alphalig (short for alpha + ligands), it will contain only alpha helices and ligands. And so on."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - alpha
+          - beta
+          - albe
+          - alphalig
+          - betalig
+          - albelig
+        example: albe
+      - name: fold
+        in: path
+        description: The fold number (folding graph or connected component index).
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+        example: 0
+      responses:
+        "200":
+          description: "The four linear notation strings for a folding graph (adj, red, seq, key)."
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: bad input parameter
+  /pdbchains_containing_motif/{motif}/json:
+    get:
+      tags:
+      - public
+      summary: Retrieve all protein chains that contain the query motif.
+      description: |
+        Search for chains containing motif.
+      operationId: retrieveChainsWithMotif
+      parameters:
+      - name: motif
+        in: path
+        description: Protein structure motif.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - 4helix
+          - globin
+          - barrel
+          - immuno
+          - propeller
+          - jelly
+          - ubi
+          - plait
+          - rossman
+          - tim
+        example: 4helix
+      responses:
+        "200":
+          description: "The protein chains matching the motif. Each entry in the result identifies a protein and a chain. The first four characters are the PDB ID of a protein, the rest identifies a chain. E.g., 7timA is PDB protein 7tim chain A."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: bad input parameter
+components:
+  schemas: {}
+  parameters:
+    pdbidParam:
+      name: pdbid
+      in: path
+      description: The protein identifier from the Protein Data Bank (the RCSB PDB).
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+      example: 7TIM
+    chainParam:
+      name: chain
+      in: path
+      description: "The protein chain identifier from the Protein Data Bank (the RCSB PDB). If you do not know the chains of a protein, use the /chains API operation to retrieve them first."
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+      example: A
+    foldParam:
+      name: fold
+      in: path
+      description: The fold number (folding graph or connected component index).
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: integer
+      example: 0
+    graphTypeParam:
+      name: graphtype
+      in: path
+      description: "The graph type, defining the secondary structure elememts (SSEs) you are interested in. If you specify alpha, the graph will contain only nodes (SSEs) which are alpha helices. For beta, it will contain only beta chains. For albe (short for alpha + beta), it will contain both alpha helices and beta chains. For alphalig (short for alpha + ligands), it will contain only alpha helices and ligands. And so on."
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        enum:
+        - alpha
+        - beta
+        - albe
+        - alphalig
+        - betalig
+        - albelig
+      example: albe
+    linnotParam:
+      name: linnot
+      in: path
+      description: Linear notation type. There are four linear notation types. Linnots are used to describe folding graphs (connected components of protein graphs).
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        enum:
+        - adj
+        - red
+        - seq
+        - key
+    motifParam:
+      name: motif
+      in: path
+      description: Protein structure motif.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        enum:
+        - 4helix
+        - globin
+        - barrel
+        - immuno
+        - propeller
+        - jelly
+        - ubi
+        - plait
+        - rossman
+        - tim
+      example: 4helix
+    graphFormatParam:
+      name: graphformat
+      in: path
+      description: The graph file format.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        enum:
+        - gml
+        - json
+        - xml
+      example: gml
+    imageFormatParam:
+      name: imageformat
+      in: path
+      description: The image file format.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        enum:
+        - png
+        - svg
+      example: png

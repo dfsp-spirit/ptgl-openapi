@@ -1,0 +1,316 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/TimSchafer/PTGL-API/1.0.0
+  - description: SwaggerHub API Auto Mocking
+    url: http://ptgl.uni-frankfurt.de/api/index.php
+info:
+  description: The API of the Protein Topology Graph Library
+  version: "1.0.0"
+  title: PTGL API
+  contact:
+    email: ts+code@rcmd.org
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: public
+    description: Public.
+  - name: admins
+    description: Secured Admin-only calls.
+  - name: developers
+    description: Operations available to regular developers.
+components:
+  parameters:
+    pdbidParam:
+      name: pdbid
+      in: path
+      description: The protein identifier from the Protein Data Bank (the RCSB PDB).
+      example: 7TIM
+      required: true
+      schema:
+        type: string
+    chainParam:
+      name: chain
+      in: path
+      description: The protein chain identifier from the Protein Data Bank (the RCSB PDB). If you do not know the chains of a protein, use the /chains API operation to retrieve them first.
+      example: A
+      required: true
+      schema:
+        type: string
+    foldParam:
+      name: fold
+      in: path
+      description: The fold number (folding graph or connected component index).
+      example: 0
+      required: true
+      schema:
+        type: integer
+    graphTypeParam:
+      name: graphtype
+      in: path
+      description: The graph type, defining the secondary structure elememts (SSEs) you are interested in. If you specify alpha, the graph will contain only nodes (SSEs) which are alpha helices. For beta, it will contain only beta chains. For albe (short for alpha + beta), it will contain both alpha helices and beta chains. For alphalig (short for alpha + ligands), it will contain only alpha helices and ligands. And so on.
+      example: albe
+      required: true
+      schema:
+        enum: [alpha, beta, albe, alphalig, betalig, albelig]
+    linnotParam:
+      name: linnot
+      in: path
+      description: Linear notation type. There are four linear notation types. Linnots are used to describe folding graphs (connected components of protein graphs).
+      example:
+      required: true
+      schema:
+       enum: [adj, red, seq, key]
+    motifParam:
+      name: motif
+      in: path
+      description: Protein structure motif.
+      example: 4helix
+      required: true
+      schema:
+       enum: [4helix, globin, barrel, immuno, propeller, jelly, ubi, plait, rossman, tim]
+    graphFormatParam:
+      name: graphformat
+      in: path
+      description: The graph file format.
+      example: gml
+      required: true
+      schema:
+        enum: [gml, json, xml]
+    imageFormatParam:
+      name: imageformat
+      in: path
+      description: The image file format.
+      example: png
+      required: true
+      schema:
+        enum: [png, svg]
+paths:
+  /chains/{pdbid}:
+    get:
+      tags:
+        - public
+      summary: List all chain names for a protein
+      operationId: listChains
+      description: |
+        List all chain names for a protein, given by its PDB identifier. The chains names can be used to query more specific information in subsequent API calls.
+      parameters:
+        - $ref: "#/components/parameters/pdbidParam"
+      responses:
+        '200':
+          description: List of all chain names of the respective protein.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: bad input parameter
+  /folds/{pdbid}/{chain}/{graphtype}:
+    get:
+      tags:
+        - public
+      summary: List all fold identifiers (indices of folding graphs, or connected components) of a protein graph.
+      operationId: listFolds
+      description: |
+        Search for all fold identifiers of a protein graph. The graph is defined by the protein (PDB ID), chain, and the graph type. A fold, also known as a folding graph, or more generally, a connected component of a graph, is a part of a full protein graph. Fold identifiers are simple, zero-based indices that can be used to query more specific information in subsequent API calls.
+      parameters:
+        - $ref: "#/components/parameters/pdbidParam"
+        - $ref: "#/components/parameters/chainParam"
+        - $ref: "#/components/parameters/graphTypeParam"
+      responses:
+        '200':
+          description: List of all folding graph numbers of the respective protein graph. The numbers are zero based indices into the list of connectec components of the graph. If a graph consists of a single connected component, this will return a list containing only the number zero.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                  format: int32
+                  minimum: 0
+        '400':
+          description: bad input parameter
+  /pg/{pdbid}/{chain}/{graphtype}/{graphformat}:
+    get:
+      tags:
+        - public
+      summary: Retrieve graph string for a protein graph in the respective graph file format.
+      operationId: retrieveProteinGraphString
+      description: |
+        Search for graph string of a protein graph in a certain graph file format. The graph is defined by the protein identifier (PDB ID), chain, and the graph type.
+      parameters:
+        - $ref: "#/components/parameters/pdbidParam"
+        - $ref: "#/components/parameters/chainParam"
+        - $ref: "#/components/parameters/graphTypeParam"
+        - $ref: "#/components/parameters/graphFormatParam"
+      responses:
+        '200':
+          description: The graph string, a serialized graph description.
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: bad input parameter
+  /pgvis/{pdbid}/{chain}/{graphtype}/{imageformat}:
+    get:
+      tags:
+        - public
+      summary: Retrieve graph visualization for a protein graph in the respective image file format.
+      operationId: retrieveProteinGraphVis
+      description: |
+        Search for visualization of a protein graph in a certain image format. The graph is defined by the protein identifier (PDB ID), chain, and the graph type.
+      parameters:
+        - $ref: "#/components/parameters/pdbidParam"
+        - $ref: "#/components/parameters/chainParam"
+        - $ref: "#/components/parameters/graphTypeParam"
+        - $ref: "#/components/parameters/imageFormatParam"
+      responses:
+        '200':
+          description: The protein graph string, a serialized graph description.
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: bad input parameter
+  /fg/{pdbid}/{chain}/{graphtype}/{fold}/{graphformat}:
+    get:
+      tags:
+        - public
+      summary: Retrieve graph string for a folding graph in the respective graph file format.
+      operationId: retrieveFoldingGraphString
+      description: |
+        Search for graph string of a protein graph in a certain graph file format. The graph is defined by the protein identifier (PDB ID), chain, and the graph type.
+      parameters:
+        - $ref: "#/components/parameters/pdbidParam"
+        - $ref: "#/components/parameters/chainParam"
+        - $ref: "#/components/parameters/graphTypeParam"
+        - $ref: "#/components/parameters/foldParam"
+        - $ref: "#/components/parameters/graphFormatParam"
+      responses:
+        '200':
+          description: The folding graph string, a serialized graph description.
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: bad input parameter
+  /fgvis/{pdbid}/{chain}/{graphtype}/{fold}/{imageformat}:
+    get:
+      tags:
+        - public
+      summary: Retrieve graph visualization for a folding graph in the respective image file format.
+      operationId: retrieveFoldingGraphVis
+      description: |
+        Search for graph string of a protein graph in a certain graph file format. The graph is defined by the protein identifier (PDB ID), chain, and the graph type.
+      parameters:
+        - $ref: "#/components/parameters/pdbidParam"
+        - $ref: "#/components/parameters/chainParam"
+        - $ref: "#/components/parameters/graphTypeParam"
+        - $ref: "#/components/parameters/foldParam"
+        - $ref: "#/components/parameters/imageFormatParam"
+      responses:
+        '200':
+          description: The folding graph visualization (image).
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: bad input parameter
+  /linnot/{pdbid}/{chain}/{graphtype}/{fold}/{linnot}:
+    get:
+      tags:
+        - public
+      summary: Retrieve linear notation (linnot) string for a folding graph in the respective linnot format.
+      operationId: retrieveFoldingGraphLinnot
+      description: |
+        Search for a linear notation string for a folding graph.
+      parameters:
+        - $ref: "#/components/parameters/pdbidParam"
+        - $ref: "#/components/parameters/chainParam"
+        - $ref: "#/components/parameters/graphTypeParam"
+        - $ref: "#/components/parameters/foldParam"
+        - $ref: "#/components/parameters/linnotParam"
+      responses:
+        '200':
+          description: The linear notation string for a folding graph.
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: bad input parameter
+  /linnotvis/{pdbid}/{chain}/{graphtype}/{fold}/{linnot}/{imageformat}:
+    get:
+      tags:
+        - public
+      summary: Retrieve linear notation visualization for a folding graph in the respective image format.
+      operationId: retrieveLinnotVis
+      description: |
+        Search for a linear notation image for a folding graph.
+      parameters:
+        - $ref: "#/components/parameters/pdbidParam"
+        - $ref: "#/components/parameters/chainParam"
+        - $ref: "#/components/parameters/graphTypeParam"
+        - $ref: "#/components/parameters/foldParam"
+        - $ref: "#/components/parameters/linnotParam"
+        - $ref: "#/components/parameters/imageFormatParam"
+      responses:
+        '200':
+          description: The linear notation visualization for a folding graph.
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: bad input parameter
+  /linnots/<pdbid>/<chain>/<graphtype>/<fold>/json:
+    get:
+      tags:
+        - public
+      summary: Retrieve all four linear notation (linnot) strings for a folding graph.
+      operationId: retrieveAllFoldingGraphLinnots
+      description: |
+        Search for all linear notation strings for a folding graph.
+      parameters:
+        - $ref: "#/components/parameters/pdbidParam"
+        - $ref: "#/components/parameters/chainParam"
+        - $ref: "#/components/parameters/graphTypeParam"
+        - $ref: "#/components/parameters/foldParam"
+      responses:
+        '200':
+          description: The four linear notation strings for a folding graph (adj, red, seq, key).
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: bad input parameter
+  /pdbchains_containing_motif/{motif}/json:
+    get:
+      tags:
+        - public
+      summary: Retrieve all protein chains that contain the query motif.
+      operationId: retrieveChainsWithMotif
+      description: |
+        Search for chains containing motif.
+      parameters:
+        - $ref: "#/components/parameters/motifParam"
+      responses:
+        '200':
+          description: The protein chains matching the motif. Each entry in the result identifies a protein and a chain. The first four characters are the PDB ID of a protein, the rest identifies a chain. E.g., 7timA is PDB protein 7tim chain A.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type : string
+        '400':
+          description: bad input parameter
