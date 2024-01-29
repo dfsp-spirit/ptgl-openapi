@@ -13,6 +13,6 @@ See [ptgl.uni-frankfurt.de](http://ptgl.uni-frankfurt.de) for the PTGL service, 
 
 This repository contains a formal API specification for the public API of the PTGL, written according to the [OpenAPI standard](https://www.openapis.org/).
 
-Of course, this specification can be used by programmers to manually create clients. However, it can also be used with tools like Swagger to automatically generate API documentation as well as API clients in more than a dozen programming languages.
+Of course, this specification can be used by programmers to manually create clients. However, it can also be used with tools like Swagger to *automatically* generate API documentation as well as API clients in more than a dozen programming languages.
 
-You can find this specification [here on swaggerhub](https://app.swaggerhub.com/apis/TimSchaefer/PTGL-API/1.0.0) and try the API live, generate documenation and clients.
+You can find this specification [here on swaggerhub](https://app.swaggerhub.com/apis/TimSchaefer/PTGL-API/1.0.0) and try the API live, generate documentation and clients.
