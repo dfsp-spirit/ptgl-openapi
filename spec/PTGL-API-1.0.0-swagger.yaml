@@ -3,7 +3,7 @@ servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
     url: https://virtserver.swaggerhub.com/TimSchafer/PTGL-API/1.0.0
-  - description: SwaggerHub API Auto Mocking
+  - description: PTGL Production Server
     url: http://ptgl.uni-frankfurt.de/api/index.php
 info:
   description: The API of the Protein Topology Graph Library

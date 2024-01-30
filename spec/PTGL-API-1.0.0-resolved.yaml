@@ -13,7 +13,7 @@ servers:
 - url: https://virtserver.swaggerhub.com/TimSchafer/PTGL-API/1.0.0
   description: SwaggerHub API Auto Mocking
 - url: http://ptgl.uni-frankfurt.de/api/index.php
-  description: SwaggerHub API Auto Mocking
+  description: PTGL Production Server
 tags:
 - name: public
   description: Public.
